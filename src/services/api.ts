@@ -4,6 +4,7 @@ type TransactionInput = {
   fecha: string
   monto: number
   descripcion: string
+  user_id?: string | null
 }
 
 type SaleNoteInput = {
@@ -27,12 +28,37 @@ type IngresoInput = {
 }
 
 export async function addTransaction(payload: TransactionInput) {
-  const { data, error } = await supabase.from('transactions').insert([payload]).select()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    const message = userError?.message ?? 'No hay una sesión activa para guardar el egreso.'
+    console.error('No se pudo obtener el usuario autenticado:', message)
+    throw new Error(message)
+  }
+
+  const payloadWithUser = {
+    ...payload,
+    user_id: user.id,
+  }
+
+  console.log('Insertando egreso en public.transactions:', {
+    ...payloadWithUser,
+    authenticatedUserId: user.id,
+  })
+  const { data, error } = await supabase.from('transactions').insert([payloadWithUser]).select()
 
   if (error) {
+    console.error('Error de Supabase al insertar en public.transactions:', error)
+    if (error.code === '42501') {
+      throw new Error(`RLS rechazó el egreso para el usuario autenticado ${user.id}. Ejecuta supabase/transactions_rls.sql en Supabase.`)
+    }
     throw new Error(error.message)
   }
 
+  console.log('Egreso insertado correctamente:', data)
   return data
 }
 

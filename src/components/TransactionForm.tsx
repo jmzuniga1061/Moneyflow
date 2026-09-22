@@ -1,19 +1,24 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { addTransaction } from '../services/api'
 
 type TransactionFormValues = {
+  monto: string
+  fecha: string
+  descripcion: string
+}
+
+type TransactionPayload = {
   monto: number
   fecha: string
   descripcion: string
 }
 
 type TransactionFormProps = {
-  onSubmit?: (values: TransactionFormValues) => Promise<void> | void
+  onSubmit?: (values: TransactionPayload) => Promise<void> | void
 }
 
 const defaultValues = {
-  monto: 0,
+  monto: '',
   fecha: new Date().toISOString().slice(0, 10),
   descripcion: '',
 }
@@ -21,6 +26,7 @@ const defaultValues = {
 export default function TransactionForm({ onSubmit }: TransactionFormProps) {
   const [values, setValues] = useState<TransactionFormValues>(defaultValues)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (field: keyof TransactionFormValues, value: string | number) => {
     setValues((current) => ({ ...current, [field]: value }))
@@ -28,22 +34,39 @@ export default function TransactionForm({ onSubmit }: TransactionFormProps) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError('')
+
+    const monto = Number(values.monto.replace(',', '.'))
+    if (!Number.isFinite(monto) || monto <= 0) {
+      setError('El monto debe ser un número mayor que cero.')
+      return
+    }
+
+    if (!values.fecha || !values.descripcion.trim()) {
+      setError('Completa la fecha y la descripción.')
+      return
+    }
+
     setLoading(true)
 
     try {
       const payload = {
-        monto: Number(values.monto),
+        monto,
         fecha: values.fecha,
-        descripcion: values.descripcion,
+        descripcion: values.descripcion.trim(),
       }
 
       if (onSubmit) {
         await onSubmit(payload)
       } else {
-        await addTransaction(payload)
+        throw new Error('El formulario de egresos no tiene un manejador de guardado configurado.')
       }
 
       setValues(defaultValues)
+    } catch (submitError) {
+      const message = submitError instanceof Error ? submitError.message : 'No se pudo guardar el egreso.'
+      console.error('Error al guardar egreso desde TransactionForm:', submitError)
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -69,6 +92,8 @@ export default function TransactionForm({ onSubmit }: TransactionFormProps) {
           required
         />
       </div>
+
+      {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-slate-700">Fecha</label>
