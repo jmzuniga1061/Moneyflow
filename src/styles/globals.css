@@ -1,0 +1,96 @@
+@import 'tailwindcss';
+
+:root {
+  font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #0f172a;
+  background: #f5f7fb;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background: #f5f7fb;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+.app-theme {
+  min-height: 100vh;
+  background: #f5f7fb;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.app-theme.dark {
+  background: #0b0e11;
+  color: #f3f4f6;
+}
+
+.app-theme.dark .bg-white,
+.app-theme.dark .bg-white\/90 {
+  background-color: #181c21;
+}
+
+.app-theme.dark .bg-slate-50 {
+  background-color: #11151a;
+}
+
+.app-theme.dark .bg-slate-100 {
+  background-color: #20252b;
+}
+
+.app-theme.dark .text-slate-900 {
+  color: #f3f4f6;
+}
+
+.app-theme.dark .text-slate-700,
+.app-theme.dark .text-slate-600 {
+  color: #c5cbd3;
+}
+
+.app-theme.dark .text-slate-500 {
+  color: #8b949e;
+}
+
+.app-theme.dark .border-slate-200,
+.app-theme.dark .border-slate-300 {
+  border-color: #2b323a;
+}
+
+.app-theme.dark .hover\:bg-slate-50:hover,
+.app-theme.dark .hover\:bg-slate-100:hover,
+.app-theme.dark .hover\:bg-slate-200:hover {
+  background-color: #242a31;
+}
+
+.app-theme.dark input,
+.app-theme.dark select {
+  color: #f3f4f6;
+  background-color: #11151a;
+}
+
+.app-theme.dark input::placeholder {
+  color: #707984;
+}
