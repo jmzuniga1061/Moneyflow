@@ -19,6 +19,7 @@ type Movement = {
   monto: number
   descripcion?: string | null
   estado?: string | null
+  categoria?: string | null
 }
 
 type DashboardInsightsProps = {
@@ -50,9 +51,6 @@ export default function DashboardInsights({ ingresos, egresos }: DashboardInsigh
   const ahorro = Math.max(ingresosTotal - egresosTotal, 0)
   const emergencyTarget = egresosTotal * 3
   const emergencyProgress = emergencyTarget ? Math.min((ahorro / emergencyTarget) * 100, 100) : 0
-  const wants = egresosTotal * 0.3
-  const needs = egresosTotal * 0.5
-  const savings = egresosTotal * 0.2
   const desireRows = egresos.filter((item) => /ocio|restaurante|comida|compras|viaje|suscripci[oó]n|entretenimiento|delivery/i.test(item.descripcion ?? ''))
   const desireTotal = desireRows.reduce((sum, item) => sum + Number(item.monto || 0), 0)
   const impulsiveSpend = egresosTotal ? (desireTotal / egresosTotal) * 100 : 0
@@ -66,15 +64,13 @@ export default function DashboardInsights({ ingresos, egresos }: DashboardInsigh
       egresos: egresos.filter((item) => item.fecha.startsWith(month)).reduce((sum, item) => sum + Number(item.monto || 0), 0),
     }))
 
-  const debtRows = egresos.filter((item) => /deuda|cr[eé]dito|pr[eé]stamo|cuota/i.test(item.descripcion ?? ''))
-  const debtPending = debtRows.filter((item) => item.estado !== 'pagada').reduce((sum, item) => sum + Number(item.monto || 0), 0)
-  const debtPaid = debtRows.filter((item) => item.estado === 'pagada').reduce((sum, item) => sum + Number(item.monto || 0), 0)
+  const debtRows = egresos.filter((item) => item.categoria === 'deudas' || item.categoria === 'creditos' || /deuda|cr[eé]dito|pr[eé]stamo|cuota/i.test(item.descripcion ?? ''))
+  const debtPending = debtRows.filter((item) => item.estado !== 'pagado' && item.estado !== 'pagada').reduce((sum, item) => sum + Number(item.monto || 0), 0)
+  const debtPaid = debtRows.filter((item) => item.estado === 'pagado' || item.estado === 'pagada').reduce((sum, item) => sum + Number(item.monto || 0), 0)
   const debtData = [{ name: 'Deudas', pagadas: debtPaid, pendientes: debtPending }]
-  const spendingData = [
-    { name: 'Necesidades', value: needs, color: '#3b82f6' },
-    { name: 'Deseos', value: wants, color: '#f59e0b' },
-    { name: 'Ahorro', value: savings, color: '#10b981' },
-  ]
+  const categoryLabels: Record<string, string> = { gastos_variables: 'Variables', gastos_fijos: 'Fijos', deudas: 'Deudas', creditos: 'Créditos', pagos_mensuales: 'Pagos mensuales' }
+  const categoryColors = ['#3b82f6', '#8b5cf6', '#f43f5e', '#f59e0b', '#10b981']
+  const spendingData = Object.entries(egresos.reduce<Record<string, number>>((totals, item) => { const key = item.categoria ?? 'gastos_variables'; totals[key] = (totals[key] ?? 0) + Number(item.monto || 0); return totals }, {})).map(([key, value], index) => ({ name: categoryLabels[key] ?? key, value, color: categoryColors[index % categoryColors.length] }))
 
   const recommendations = [
     { icon: '◔', title: 'Regla 50 / 30 / 20', text: egresosTotal > ingresosTotal * 0.9 ? 'Tus egresos ocupan casi todo lo que ingresas. Revisa primero las necesidades.' : 'Distribuye 50% en necesidades, 30% en deseos y 20% en ahorro.' },
@@ -93,7 +89,7 @@ export default function DashboardInsights({ ingresos, egresos }: DashboardInsigh
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <Panel eyebrow="Distribución" title="Regla 50 / 30 / 20"><div className="h-64"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={spendingData} dataKey="value" nameKey="name" innerRadius={65} outerRadius={92} paddingAngle={3}>{spendingData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}</Pie><Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: tooltip, border: `1px solid ${grid}`, borderRadius: 8 }} /><text x="50%" y="47%" textAnchor="middle" dominantBaseline="middle" fill={text} fontSize="12">Egresos</text><text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" fill={theme === 'dark' ? '#f3f4f6' : '#0f172a'} fontSize="18" fontWeight="700">{money(egresosTotal)}</text></PieChart></ResponsiveContainer></div><div className="mt-2 flex justify-center gap-4 text-xs text-slate-500">{spendingData.map((item) => <span key={item.name} className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />{item.name}</span>)}</div></Panel>
+        <Panel eyebrow="Distribución" title="Egresos por categoría"><div className="h-64"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={spendingData} dataKey="value" nameKey="name" innerRadius={65} outerRadius={92} paddingAngle={3}>{spendingData.map((entry) => <Cell key={entry.name} fill={entry.color} />)}</Pie><Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: tooltip, border: `1px solid ${grid}`, borderRadius: 8 }} /><text x="50%" y="47%" textAnchor="middle" dominantBaseline="middle" fill={text} fontSize="12">Egresos</text><text x="50%" y="56%" textAnchor="middle" dominantBaseline="middle" fill={theme === 'dark' ? '#f3f4f6' : '#0f172a'} fontSize="18" fontWeight="700">{money(egresosTotal)}</text></PieChart></ResponsiveContainer></div><div className="mt-2 flex flex-wrap justify-center gap-4 text-xs text-slate-500">{spendingData.map((item) => <span key={item.name} className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />{item.name}</span>)}</div></Panel>
         <Panel eyebrow="Reserva" title="Progreso del fondo de emergencia"><div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ name: 'Fondo', actual: ahorro, objetivo: emergencyTarget }]} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}><CartesianGrid stroke={grid} vertical={false} /><XAxis dataKey="name" stroke={text} /><YAxis stroke={text} tickFormatter={(value) => `$${value / 1000}k`} /><Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: tooltip, border: `1px solid ${grid}`, borderRadius: 8 }} /><Bar dataKey="objetivo" fill={grid} radius={[6, 6, 0, 0]} /><Bar dataKey="actual" fill="#10b981" radius={[6, 6, 0, 0]} /></BarChart></ResponsiveContainer></div><p className="text-center text-sm text-slate-500">{emergencyTarget ? `${emergencyProgress.toFixed(0)}% completado` : 'Registra egresos para calcular tu objetivo.'}</p></Panel>
         <Panel eyebrow="Tendencia" title="Ingresos vs egresos por mes"><div className="h-64"><ResponsiveContainer width="100%" height="100%"><ComposedChart data={monthly} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}><CartesianGrid stroke={grid} vertical={false} /><XAxis dataKey="month" stroke={text} /><YAxis stroke={text} tickFormatter={(value) => `$${value / 1000}k`} /><Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: tooltip, border: `1px solid ${grid}`, borderRadius: 8 }} /><Line type="monotone" dataKey="ingresos" stroke="#10b981" strokeWidth={3} dot={{ r: 3 }} /><Line type="monotone" dataKey="egresos" stroke="#f43f5e" strokeWidth={3} dot={{ r: 3 }} /></ComposedChart></ResponsiveContainer></div><div className="flex justify-center gap-5 text-xs text-slate-500"><span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-emerald-500" />Ingresos</span><span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-full bg-rose-500" />Egresos</span></div></Panel>
         <Panel eyebrow="Obligaciones" title="Estado de deudas pendientes"><div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={debtData} layout="vertical" margin={{ top: 10, right: 10, left: 10, bottom: 0 }}><CartesianGrid stroke={grid} horizontal={false} /><XAxis type="number" stroke={text} tickFormatter={(value) => `$${value / 1000}k`} /><YAxis type="category" dataKey="name" stroke={text} /><Tooltip formatter={(value) => money(Number(value))} contentStyle={{ background: tooltip, border: `1px solid ${grid}`, borderRadius: 8 }} /><Bar dataKey="pagadas" stackId="debt" fill="#10b981" /><Bar dataKey="pendientes" stackId="debt" fill="#f59e0b" /></BarChart></ResponsiveContainer></div><p className="text-center text-sm text-slate-500">{debtRows.length ? `${debtRows.length} movimientos identificados como deuda` : 'No hay deudas identificadas en tus descripciones.'}</p></Panel>

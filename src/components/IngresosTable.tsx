@@ -11,9 +11,11 @@ type IngresoRow = {
 type IngresosTableProps = {
   rows: IngresoRow[]
   onDelete: (id: string) => Promise<void> | void
+  onEdit: (row: IngresoRow) => void
+  onSelect: (row: IngresoRow) => void
 }
 
-export default function IngresosTable({ rows, onDelete }: IngresosTableProps) {
+export default function IngresosTable({ rows, onDelete, onEdit, onSelect }: IngresosTableProps) {
   const handleDelete = async (id: string) => {
     const confirmed = window.confirm('¿Seguro que quieres eliminar este ingreso?')
     if (!confirmed) return
@@ -45,7 +47,7 @@ export default function IngresosTable({ rows, onDelete }: IngresosTableProps) {
               </tr>
             ) : (
               rows.map((row, index) => (
-                <tr key={row.id} className={`hover:bg-slate-50 ${index % 2 ? 'bg-slate-50/50' : ''}`}>
+                <tr key={row.id} onClick={() => onSelect(row)} className={`cursor-pointer hover:bg-slate-50 ${index % 2 ? 'bg-slate-50/50' : ''}`}>
                   <td className="px-4 py-3 text-sm text-slate-700">
                     {row.tipo === 'nota_venta' ? 'Nota de venta' : 'Otro ingreso'}
                   </td>
@@ -71,7 +73,20 @@ export default function IngresosTable({ rows, onDelete }: IngresosTableProps) {
                   <td className="px-4 py-3 text-sm text-slate-700">
                     <button
                       type="button"
-                      onClick={() => void handleDelete(row.id)}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        onEdit(row)
+                      }}
+                      className="mr-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        void handleDelete(row.id)
+                      }}
                       className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                     >
                       <span aria-hidden="true">⌫</span> Eliminar

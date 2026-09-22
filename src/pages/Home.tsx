@@ -105,8 +105,8 @@ export default function Home() {
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Accesos rápidos</p><h2 className="mt-1 text-xl font-semibold text-slate-900">Continúa tu gestión</h2></div><span className="text-2xl text-amber-400">✦</span></div>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link to="/transactions" className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
-            Ver transacciones
+          <Link to="/egresos" className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+            Ver egresos
           </Link>
           <Link to="/ingresos" className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-500">
             Ver ingresos

@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react'
 import { getIngresos, getTransactions } from '../services/api'
 
 export default function Reports() {
-  const [totals, setTotals] = useState({ transactions: 0, pending: 0 })
+  const [totals, setTotals] = useState({ egresos: 0, pending: 0 })
 
   useEffect(() => {
     const load = async () => {
       const [transactions, ingresos] = await Promise.all([getTransactions(), getIngresos()])
       setTotals({
-        transactions: (transactions as Array<{ monto: number }>).reduce((sum, row) => sum + Number(row.monto || 0), 0),
+        egresos: (transactions as Array<{ monto: number }>).reduce((sum, row) => sum + Number(row.monto || 0), 0),
         pending: (ingresos as Array<{ estado?: string }>).filter((row) => row.estado === 'pendiente').length,
       })
     }
@@ -26,8 +26,8 @@ export default function Reports() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <p className="text-sm text-slate-500">Total por transacciones</p>
-          <p className="mt-3 text-3xl font-bold text-slate-900">${totals.transactions.toFixed(2)}</p>
+          <p className="text-sm text-slate-500">Total por egresos</p>
+          <p className="mt-3 text-3xl font-bold text-slate-900">${totals.egresos.toFixed(2)}</p>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <p className="text-sm text-slate-500">Notas pendientes</p>

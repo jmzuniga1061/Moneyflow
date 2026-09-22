@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext'
 
 const navItems = [
   { label: 'Inicio', to: '/' },
-  { label: 'Transacciones', to: '/transactions' },
+  { label: 'Egresos', to: '/egresos' },
   { label: 'Ingresos', to: '/ingresos' },
   { label: 'Reportes', to: '/reports' },
 ]

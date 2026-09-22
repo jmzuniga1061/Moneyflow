@@ -7,9 +7,10 @@ type TableColumn<T> = {
 type TableProps<T extends Record<string, unknown>> = {
   columns: TableColumn<T>[]
   rows: T[]
+  onRowClick?: (row: T) => void
 }
 
-export default function Table<T extends Record<string, unknown>>({ columns, rows }: TableProps<T>) {
+export default function Table<T extends Record<string, unknown>>({ columns, rows, onRowClick }: TableProps<T>) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -35,7 +36,11 @@ export default function Table<T extends Record<string, unknown>>({ columns, rows
               </tr>
             ) : (
               rows.map((row, index) => (
-                <tr key={index} className={`hover:bg-slate-50 ${index % 2 ? 'bg-slate-50/50' : ''}`}>
+                <tr
+                  key={index}
+                  onClick={() => onRowClick?.(row)}
+                  className={`hover:bg-slate-50 ${onRowClick ? 'cursor-pointer' : ''} ${index % 2 ? 'bg-slate-50/50' : ''}`}
+                >
                   {columns.map((column) => (
                     <td key={String(column.key)} className="px-4 py-3 text-sm text-slate-700">
                       {column.render ? column.render(row) : String(row[column.key] ?? '-')}

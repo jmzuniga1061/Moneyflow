@@ -11,7 +11,7 @@ import Home from './pages/Home'
 import Ingresos from './pages/Ingresos'
 import ProfileSettings from './pages/ProfileSettings'
 import Reports from './pages/Reports'
-import Transactions from './pages/Transactions'
+import Egresos from './pages/Egresos'
 
 function AppShell() {
   const { theme } = useTheme()
@@ -36,13 +36,14 @@ function AppShell() {
               }
             />
             <Route
-              path="/transactions"
+              path="/egresos"
               element={
                 <PrivateRoute>
-                  <Transactions />
+                  <Egresos />
                 </PrivateRoute>
               }
             />
+            <Route path="/transactions" element={<Navigate to="/egresos" replace />} />
             <Route
               path="/ingresos"
               element={

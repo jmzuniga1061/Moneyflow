@@ -1,9 +1,13 @@
 import { supabase } from './supabaseClient'
 
 type TransactionInput = {
+  categoria?: 'gastos_variables' | 'gastos_fijos' | 'deudas' | 'creditos' | 'pagos_mensuales'
   fecha: string
   monto: number
   descripcion: string
+  estado?: 'pendiente' | 'pagado'
+  recurrente?: boolean
+  recordatorio_dia?: number | null
   user_id?: string | null
 }
 
@@ -100,6 +104,8 @@ export async function updateTransaction(id: string, data: Partial<TransactionInp
 
   return updatedData
 }
+
+export const updateTransaccion = updateTransaction
 
 export async function deleteTransaction(id: string) {
   const { data, error } = await supabase.from('transactions').delete().eq('id', id).select()
