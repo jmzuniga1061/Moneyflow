@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 
 export type IngresoFormValues = {
   tipo: 'nota_venta' | 'otro_ingreso'
+  destino: 'ingreso' | 'ahorro'
   numero_nota: string
   fecha: string
   monto: string
@@ -19,6 +20,7 @@ const today = new Date().toISOString().slice(0, 10)
 
 const defaultValues: IngresoFormValues = {
   tipo: 'nota_venta',
+  destino: 'ingreso',
   numero_nota: '',
   fecha: today,
   monto: '',
@@ -59,6 +61,21 @@ export default function IngresoForm({ onSubmit, loading = false, error = '' }: I
         </select>
       </div>
 
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-700">Destino del dinero</label>
+        <select
+          value={values.destino}
+          onChange={(event) => handleChange('destino', event.target.value as 'ingreso' | 'ahorro')}
+          className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-amber-400"
+        >
+          <option value="ingreso">Ingreso operativo del mes</option>
+          <option value="ahorro">Enviar directamente a ahorros</option>
+        </select>
+        <p className="text-xs text-slate-500">
+          {values.destino === 'ahorro' ? 'Se guardará en Ahorros y no aparecerá en el total de ingresos.' : 'Se guardará como ingreso operativo.'}
+        </p>
+      </div>
+
       {isNotaVenta ? (
         <>
           <div className="space-y-2">
@@ -72,17 +89,6 @@ export default function IngresoForm({ onSubmit, loading = false, error = '' }: I
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-slate-700">Estado</label>
-            <select
-              value={values.estado}
-              onChange={(event) => handleChange('estado', event.target.value as 'pendiente' | 'pagada')}
-              className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-amber-400"
-            >
-              <option value="pendiente">Pendiente</option>
-              <option value="pagada">Pagada</option>
-            </select>
-          </div>
         </>
       ) : (
         <div className="space-y-2">
@@ -96,6 +102,18 @@ export default function IngresoForm({ onSubmit, loading = false, error = '' }: I
           />
         </div>
       )}
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-700">Estado</label>
+        <select
+          value={values.estado}
+          onChange={(event) => handleChange('estado', event.target.value as 'pendiente' | 'pagada')}
+          className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none transition focus:border-amber-400"
+        >
+          <option value="pendiente">Pendiente</option>
+          <option value="pagada">Pagada</option>
+        </select>
+      </div>
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-slate-700">Fecha</label>

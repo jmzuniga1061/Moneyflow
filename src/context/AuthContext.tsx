@@ -6,6 +6,8 @@ type UserSession = {
   id: string
   email?: string | null
   avatar_url?: string | null
+  nickname?: string | null
+  role: 'usuario' | 'superusuario'
 }
 
 type AuthContextType = {
@@ -13,6 +15,7 @@ type AuthContextType = {
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  isSuperuser: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -21,16 +24,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null)
   const [loading, setLoading] = useState(true)
 
+  const buildUser = async (authUser: { id: string; email?: string | null; user_metadata?: Record<string, unknown> }) => {
+    const { data: profile } = await supabase.from('users').select('nickname, role').eq('id', authUser.id).maybeSingle()
+    const metadataRole = authUser.user_metadata?.role
+    return {
+      id: authUser.id,
+      email: authUser.email,
+      avatar_url: typeof authUser.user_metadata?.avatar_url === 'string' ? authUser.user_metadata.avatar_url : null,
+      nickname: (profile?.nickname as string | null | undefined) ?? (authUser.user_metadata?.nickname as string | null | undefined) ?? null,
+      role: profile?.role === 'superusuario' || metadataRole === 'superusuario' ? 'superusuario' as const : 'usuario' as const,
+    }
+  }
+
   useEffect(() => {
     const getSession = async () => {
       const { data, error } = await supabase.auth.getSession()
 
       if (!error && data.session?.user) {
-        setUser({
-          id: data.session.user.id,
-          email: data.session.user.email,
-          avatar_url: data.session.user.user_metadata?.avatar_url ?? null,
-        })
+        setUser(await buildUser(data.session.user))
       }
 
       setLoading(false)
@@ -40,11 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          avatar_url: session.user.user_metadata?.avatar_url ?? null,
-        })
+        void buildUser(session.user).then(setUser)
       } else {
         setUser(null)
       }
@@ -76,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(null)
       },
+      isSuperuser: user?.role === 'superusuario',
     }),
     [user, loading],
   )

@@ -122,10 +122,10 @@ export default function TransactionForm({ onSubmit }: TransactionFormProps) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-2 text-sm font-medium text-slate-700"><span>Estado</span><select value={values.estado} onChange={(event) => handleChange('estado', event.target.value as TransactionFormValues['estado'])} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900"><option value="pendiente">Pendiente</option><option value="pagado">Pagado</option></select></label>
-        <label className="flex items-end gap-2 pb-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={values.recurrente} onChange={(event) => handleChange('recurrente', event.target.checked)} className="h-5 w-5 accent-amber-400" /> Pago mensual</label>
+        <label className="flex items-end gap-2 pb-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={values.recurrente} onChange={(event) => handleChange('recurrente', event.target.checked)} className="h-5 w-5 accent-amber-400" /> Pago mensual recurrente</label>
       </div>
 
-      {values.recurrente ? <div className="space-y-2"><label className="block text-sm font-medium text-slate-700">Día del recordatorio</label><input type="number" min="1" max="28" value={values.recordatorio_dia} onChange={(event) => handleChange('recordatorio_dia', event.target.value)} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900" placeholder="Ej. 5" required /></div> : null}
+      {values.recurrente ? <div className="space-y-2"><label className="block text-sm font-medium text-slate-700">Día del recordatorio</label><input type="number" min="1" max="28" value={values.recordatorio_dia} onChange={(event) => handleChange('recordatorio_dia', event.target.value)} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900" required /></div> : null}
 
       {error ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div> : null}
 

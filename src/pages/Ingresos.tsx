@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import IngresoForm from '../components/IngresoForm'
 import IngresosTable from '../components/IngresosTable'
 import RecordModal from '../components/RecordModal'
-import { addIngreso, deleteIngreso, getIngresos, updateIngreso } from '../services/api'
+import { addAhorro, addIngreso, deleteIngreso, getIngresos, updateIngreso } from '../services/api'
 
 type IngresoTipo = 'nota_venta' | 'otro_ingreso'
 
@@ -17,6 +19,7 @@ type IngresoRow = {
 }
 
 export default function Ingresos() {
+  const { isSuperuser } = useAuth()
   const [rows, setRows] = useState<IngresoRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -53,6 +56,7 @@ export default function Ingresos() {
 
   const handleSubmit = async (values: {
     tipo: IngresoTipo
+    destino: 'ingreso' | 'ahorro'
     numero_nota: string
     fecha: string
     monto: string
@@ -68,25 +72,41 @@ export default function Ingresos() {
       return
     }
 
-    if (values.tipo === 'nota_venta' && !values.numero_nota.trim()) {
+    if (values.destino === 'ingreso' && values.tipo === 'nota_venta' && !values.numero_nota.trim()) {
       setError('El número de nota es obligatorio para este tipo de ingreso.')
       return
     }
 
-    if (values.tipo === 'otro_ingreso' && !values.descripcion.trim()) {
+    if (values.destino === 'ingreso' && values.tipo === 'otro_ingreso' && !values.descripcion.trim()) {
       setError('La descripción es obligatoria para otros ingresos.')
+      return
+    }
+
+    if (values.destino === 'ahorro' && !values.descripcion.trim() && !values.numero_nota.trim()) {
+      setError('Añade una descripción para identificar este ahorro.')
       return
     }
 
     setLoading(true)
 
     try {
+      if (values.destino === 'ahorro') {
+        await addAhorro({
+          monto: Number(parsedMonto),
+          fecha: values.fecha,
+          descripcion: values.descripcion.trim() || values.numero_nota.trim() || 'Ahorro desde ingresos',
+          origen: 'manual',
+        })
+        await loadIngresos()
+        return
+      }
+
       const payload = {
         tipo: values.tipo,
         numero_nota: values.tipo === 'nota_venta' ? values.numero_nota : null,
         fecha: values.fecha,
         monto: Number(parsedMonto),
-        estado: values.tipo === 'nota_venta' ? values.estado : null,
+        estado: values.estado,
         descripcion: values.tipo === 'otro_ingreso' ? values.descripcion : null,
       }
 
@@ -119,7 +139,7 @@ export default function Ingresos() {
         numero_nota: editingRow.tipo === 'nota_venta' ? editingRow.numero_nota : null,
         fecha: editingRow.fecha,
         monto: Number(editingRow.monto),
-        estado: editingRow.tipo === 'nota_venta' ? editingRow.estado : null,
+        estado: editingRow.estado,
         descripcion: editingRow.tipo === 'otro_ingreso' ? editingRow.descripcion : null,
       })
       setEditingRow(null)
@@ -137,6 +157,7 @@ export default function Ingresos() {
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-500">Entradas</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Ingresos</h1>
         <p className="mt-2 text-sm text-slate-500">Registra notas de venta y otros ingresos con trazabilidad.</p>
+        {isSuperuser ? <Link to="/notas-venta" className="mt-4 inline-flex rounded-lg bg-amber-400 px-4 py-2.5 text-sm font-bold text-slate-950">Gestionar notas de venta</Link> : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

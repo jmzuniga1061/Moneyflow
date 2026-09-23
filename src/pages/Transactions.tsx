@@ -11,7 +11,7 @@ type TransactionRow = {
   fecha: string
   descripcion: string
   estado: 'pendiente' | 'pagado'
-  recurrente: boolean
+  recurrente?: boolean
   recordatorio_dia?: number | null
 }
 
@@ -81,9 +81,13 @@ export default function Transactions() {
     setLoadError('')
     try {
       await updateTransaccion(editingRow.id, {
+        categoria: editingRow.categoria,
         monto: Number(editingRow.monto),
         fecha: editingRow.fecha,
         descripcion: editingRow.descripcion.trim(),
+        estado: editingRow.estado,
+        recurrente: editingRow.recurrente,
+        recordatorio_dia: editingRow.recordatorio_dia ?? null,
       })
       setEditingRow(null)
       await loadTransactions()
@@ -99,11 +103,7 @@ export default function Transactions() {
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-500">Operación</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">Egresos</h1>
-        <p className="mt-2 text-sm text-slate-500">Organiza tus gastos fijos, variables, deudas y pagos mensuales.</p>
-      </div>
-
-      <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-        Los pagos mensuales recurrentes conservan el día del recordatorio en Supabase para que puedas gestionarlos y programar avisos desde tu sistema de notificaciones.
+        <p className="mt-2 text-sm text-slate-500">Registra y revisa tus egresos en un solo lugar.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[420px_1fr]">
@@ -113,8 +113,8 @@ export default function Transactions() {
           {loadError ? <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{loadError}</div> : null}
           <Table
             columns={[
-              { key: 'descripcion', label: 'Descripción' },
               { key: 'categoria', label: 'Categoría' },
+              { key: 'descripcion', label: 'Descripción' },
               { key: 'monto', label: 'Monto', render: (row) => `$${Number(row.monto).toFixed(2)}` },
               { key: 'fecha', label: 'Fecha' },
               { key: 'estado', label: 'Estado' },

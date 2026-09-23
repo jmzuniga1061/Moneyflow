@@ -17,7 +17,13 @@ type SaleNoteInput = {
   monto: number
   estado: 'pendiente' | 'pagada'
   transaction_id?: string | null
+  tipo?: 'azogues' | 'cuenca' | 'otro'
+  activo?: boolean
+  descripcion?: string | null
+  user_id?: string | null
 }
+
+export type AhorroInput = { monto: number; fecha: string; descripcion?: string | null; origen?: 'manual' | 'cierre_mensual'; revertido?: boolean }
 
 type IngresoTipo = 'nota_venta' | 'otro_ingreso'
 
@@ -131,12 +137,55 @@ export async function getTransactionsWithSaleNotes() {
 }
 
 export async function addSaleNote(payload: SaleNoteInput) {
-  const { data, error } = await supabase.from('sale_notes').insert([payload]).select()
+  const { data: authData } = await supabase.auth.getUser()
+  const { data, error } = await supabase.from('sale_notes').insert([{ ...payload, user_id: authData.user?.id }]).select()
 
   if (error) {
     throw new Error(error.message)
   }
 
+  return data
+}
+
+export async function getAhorros() {
+  const { data, error } = await supabase.from('ahorros').select('*').order('fecha', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function addAhorro(payload: AhorroInput) {
+  const { data: authData } = await supabase.auth.getUser()
+  const { data, error } = await supabase.from('ahorros').insert([{ ...payload, user_id: authData.user?.id }]).select()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function updateAhorro(id: string, payload: Partial<AhorroInput>) {
+  const { data, error } = await supabase.from('ahorros').update(payload).eq('id', id).select()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function cerrarMesEnAhorros(mes: string) {
+  const { data, error } = await supabase.rpc('cerrar_mes_en_ahorros', { p_mes: mes })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function revertirCierreAhorros(mes: string) {
+  const { error } = await supabase.rpc('revertir_cierre_ahorros', { p_mes: mes })
+  if (error) throw new Error(error.message)
+}
+
+export async function getUsersBasic() {
+  const { data, error } = await supabase.from('users').select('id, email, nickname, role').order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function updateUserRole(id: string, role: 'usuario' | 'superusuario') {
+  const { data, error } = await supabase.from('users').update({ role }).eq('id', id).select()
+  if (error) throw new Error(error.message)
   return data
 }
 

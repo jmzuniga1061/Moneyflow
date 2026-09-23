@@ -4,12 +4,6 @@
 alter table public.transactions
   add column if not exists user_id uuid references auth.users(id) on delete cascade;
 
-alter table public.transactions
-  add column if not exists categoria text not null default 'gastos_variables' check (categoria in ('gastos_variables', 'gastos_fijos', 'deudas', 'creditos', 'pagos_mensuales')),
-  add column if not exists estado text not null default 'pendiente' check (estado in ('pendiente', 'pagado')),
-  add column if not exists recurrente boolean not null default false,
-  add column if not exists recordatorio_dia smallint check (recordatorio_dia between 1 and 28);
-
 create index if not exists transactions_user_id_idx
   on public.transactions(user_id);
 

@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const items = [
   { label: 'Dashboard', to: '/' },
@@ -8,6 +9,8 @@ const items = [
 ]
 
 export default function Sidebar() {
+  const { isSuperuser } = useAuth()
+  const visibleItems = isSuperuser ? [...items, { label: 'Ahorros', to: '/ahorros' }, { label: 'Notas de venta', to: '/notas-venta' }, { label: 'Usuarios', to: '/usuarios' }] : items
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-slate-50 p-4 lg:flex">
       <div className="mb-6 px-2">
@@ -15,7 +18,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="space-y-2">
-        {items.map((item) => (
+        {visibleItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

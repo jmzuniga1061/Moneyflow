@@ -12,6 +12,10 @@ import Ingresos from './pages/Ingresos'
 import ProfileSettings from './pages/ProfileSettings'
 import Reports from './pages/Reports'
 import Egresos from './pages/Egresos'
+import Ahorros from './pages/AhorrosAdmin'
+import SaleNotes from './pages/SaleNotes'
+import UserManagement from './pages/UserManagement'
+import RoleRoute from './components/RoleRoute'
 
 function AppShell() {
   const { theme } = useTheme()
@@ -44,6 +48,9 @@ function AppShell() {
               }
             />
             <Route path="/transactions" element={<Navigate to="/egresos" replace />} />
+            <Route path="/ahorros" element={<RoleRoute><Ahorros /></RoleRoute>} />
+            <Route path="/notas-venta" element={<RoleRoute><SaleNotes /></RoleRoute>} />
+            <Route path="/usuarios" element={<RoleRoute><UserManagement /></RoleRoute>} />
             <Route
               path="/ingresos"
               element={

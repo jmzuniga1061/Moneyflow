@@ -8,6 +8,9 @@ type SaleNoteFormValues = {
   monto: number
   estado: 'pendiente' | 'pagada'
   transaction_id: string | null
+  tipo: 'azogues' | 'cuenca' | 'otro'
+  descripcion: string
+  activo: boolean
 }
 
 type SaleNoteFormProps = {
@@ -20,6 +23,9 @@ const defaultValues = {
   monto: 0,
   estado: 'pendiente' as const,
   transaction_id: null,
+  tipo: 'otro' as const,
+  descripcion: '',
+  activo: true,
 }
 
 export default function SaleNoteForm({ onSubmit }: SaleNoteFormProps) {
@@ -40,7 +46,7 @@ export default function SaleNoteForm({ onSubmit }: SaleNoteFormProps) {
     loadTransactions()
   }, [])
 
-  const handleChange = (field: keyof SaleNoteFormValues, value: string | number | null) => {
+  const handleChange = (field: keyof SaleNoteFormValues, value: string | number | boolean | null) => {
     setValues((current) => ({ ...current, [field]: value }))
   }
 
@@ -55,6 +61,9 @@ export default function SaleNoteForm({ onSubmit }: SaleNoteFormProps) {
         monto: Number(values.monto),
         estado: values.estado,
         transaction_id: values.transaction_id || null,
+        tipo: values.tipo,
+        descripcion: values.descripcion.trim(),
+        activo: values.activo,
       }
 
       if (onSubmit) {
@@ -74,6 +83,13 @@ export default function SaleNoteForm({ onSubmit }: SaleNoteFormProps) {
       <div>
         <p className="text-lg font-semibold text-slate-900">Nueva nota de venta</p>
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="space-y-2 text-sm font-medium text-slate-700"><span>Sucursal / tipo</span><select value={values.tipo} onChange={(event) => handleChange('tipo', event.target.value)} className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900"><option value="azogues">Rustung Azogues</option><option value="cuenca">Rustung Cuenca</option><option value="otro">Otro</option></select></label>
+        <label className="flex items-end gap-2 pb-2 text-sm font-medium text-slate-700"><input type="checkbox" checked={values.activo} onChange={(event) => handleChange('activo', event.target.checked)} className="h-5 w-5 accent-amber-400" /> Nota activa</label>
+      </div>
+
+      <div className="space-y-2"><label className="block text-sm font-medium text-slate-700">Descripción</label><textarea value={values.descripcion} onChange={(event) => handleChange('descripcion', event.target.value)} className="min-h-20 w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-slate-900" placeholder="Detalle de la venta" /></div>
 
       <div className="space-y-2">
         <label className="block text-sm font-medium text-slate-700">Número de nota</label>

@@ -12,7 +12,7 @@ const navItems = [
 
 export default function Navbar() {
   const navigate = useNavigate()
-  const { user, signOut } = useAuth()
+  const { user, signOut, isSuperuser } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [menuOpen, setMenuOpen] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -20,6 +20,7 @@ export default function Navbar() {
 
   const avatarUrl = user?.avatar_url ?? null
   const initials = (user?.email ?? 'U').charAt(0).toUpperCase()
+  const visibleNavItems = isSuperuser ? [...navItems, { label: 'Notas de venta', to: '/notas-venta' }] : navItems
 
   useEffect(() => {
     if (!menuOpen) return
@@ -68,7 +69,7 @@ export default function Navbar() {
 
         <nav className="flex items-center gap-2">
           <div className={`${mobileOpen ? 'flex' : 'hidden'} absolute left-0 right-0 top-full flex-col border-b border-slate-200 bg-white p-4 shadow-xl sm:static sm:flex sm:flex-row sm:items-center sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none`}>
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
