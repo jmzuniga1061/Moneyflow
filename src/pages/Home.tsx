@@ -32,7 +32,8 @@ export default function Home() {
         const ingresoRows = ingresos as Movement[]
         const egresoRows = transactions as Movement[]
 
-        const ingresosTotal = ingresoRows.reduce(
+        const ingresosPagados = ingresoRows.filter((item) => item.estado === 'pagada' || item.estado === 'pagado')
+        const ingresosTotal = ingresosPagados.reduce(
           (sum, item) => sum + Number(item.monto || 0),
           0,
         )
